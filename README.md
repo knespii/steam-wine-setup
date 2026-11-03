@@ -1,21 +1,23 @@
 # hra-do-steamu
 
-Skript, který vezme Windows hru (složku s `.exe` nebo instalátor), připraví ji v **Bottles** nebo **Heroicu** a přidá do **Steamu** jako ne-Steam hru.
+A script that takes a Windows game (a folder with an `.exe`, or an installer `setup.exe`), sets it up in **Bottles** or **Heroic**, and adds it to **Steam** as a non-Steam game.
 
-## Požadavky
-- Python 3 (bez dalších balíčků)
-- Bottles nebo Heroic (Flatpak i nativní)
+Czech version: [README.cs.md](README.cs.md)
+
+## Requirements
+- Python 3 (no extra packages)
+- Bottles or Heroic (Flatpak or native)
 - Steam
-- Volitelně: `innoextract` (rozbalení instalátorů bez Wine), `icoutils` (ikona ze `.exe`), `gamemode`
+- Optional: `innoextract` (unpacks Inno Setup installers without Wine), `icoutils` (icon from the `.exe`), `gamemode`
 
-## Použití
+## Usage
 ```bash
-python3 hra-do-steamu.py                      # vybereš spouštěč a hru ze seznamu
-python3 hra-do-steamu.py --heroic "/cesta"    # rovnou přes Heroic
-python3 hra-do-steamu.py --bottles "/cesta"   # rovnou přes Bottles
+python3 hra-do-steamu.py                      # pick the launcher and the game from a list
+python3 hra-do-steamu.py --heroic "/path"     # straight to Heroic
+python3 hra-do-steamu.py --bottles "/path"    # straight to Bottles
 ```
 
-Nastavení (složky s hrami, Fsync a GameMode pro nové bottle) je nahoře ve skriptu.
+Settings (game folders, Fsync and GameMode for new bottles) are at the top of the script.
 
-## Poznámka
-Skript nic nestahuje a nepřihlašuje se do žádného účtu. Pracuje jen s hrami, které už máš na disku. Zálohuje `shortcuts.vdf` Steamu a knihovnu Heroicu před každou změnou.
+## Note
+The script does not download anything and does not log in to any account. It only works with games already on your disk. It backs up Steam's `shortcuts.vdf` and the Heroic library before every change.
