@@ -2,8 +2,6 @@
 
 A script that takes a Windows game (a folder with an `.exe`, or an installer `setup.exe`), sets it up in **Bottles** or **Heroic**, and adds it to **Steam** as a non-Steam game.
 
-Czech version: [README.cs.md](README.cs.md)
-
 ## Requirements
 - Python 3 (no extra packages)
 - Bottles or Heroic (Flatpak or native)
