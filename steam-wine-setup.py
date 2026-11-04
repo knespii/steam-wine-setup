@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-hra-do-steamu.py
+steam-wine-setup.py
 ================
 Z Windows hry (složka s .exe nebo instalátor setup.exe) udělá hru spouštěnou
 přes Bottles nebo Heroic a přidá ji do Steamu jako ne-Steam hru.
 
 Použití:
-    python3 hra-do-steamu.py                      # vybereš Bottles/Heroic a hru ze seznamu
-    python3 hra-do-steamu.py "MojeHra"            # název složky (hledá v SLOZKY_S_HRAMI)
-    python3 hra-do-steamu.py ~/Hry/MojeHra        # celá cesta (i přímo k .exe nebo setup.exe)
-    python3 hra-do-steamu.py --heroic "MojeHra"   # rovnou přes Heroic
-    python3 hra-do-steamu.py --bottles "MojeHra"  # rovnou přes Bottles
+    python3 steam-wine-setup.py                      # vybereš Bottles/Heroic a hru ze seznamu
+    python3 steam-wine-setup.py "MojeHra"            # název složky (hledá v SLOZKY_S_HRAMI)
+    python3 steam-wine-setup.py ~/Hry/MojeHra        # celá cesta (i přímo k .exe nebo setup.exe)
+    python3 steam-wine-setup.py --heroic "MojeHra"   # rovnou přes Heroic
+    python3 steam-wine-setup.py --bottles "MojeHra"  # rovnou přes Bottles
 
 Co udělá:
   1. najde .exe ve složce a nechá tě vybrat to, které spouští hru (nebo instalátor)
