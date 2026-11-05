@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.parse
 
 HEROIC = os.path.expanduser("~/.var/app/com.heroicgameslauncher.hgl/config/heroic")
 UMU = os.path.join(HEROIC, "tools/runtimes/umu/umu_run.py")
@@ -29,6 +30,20 @@ PREFIXY = os.path.expanduser("~/Games/Heroic/Prefixes")
 
 # Soubory, které nejsou hra (instalátory, redistribuce, deinstalátory)
 NE_HRY = re.compile(r"unins|setup|install|redist|vc_|vcredist|dxsetup|crash|helper|launcher", re.I)
+
+
+def cesta_z_argumentu(text):
+    """Převede cestu nebo file:// adresu (z přetažení) na skutečnou cestu k setup.exe."""
+    text = text.strip()
+    if text.startswith("file://"):
+        text = urllib.parse.unquote(urllib.parse.urlparse(text).path)
+    cesta = os.path.realpath(os.path.expanduser(text))
+    if os.path.isdir(cesta):
+        for koren, _, soubory in os.walk(cesta):
+            for s in soubory:
+                if s.lower() == "setup.exe":
+                    return os.path.join(koren, s)
+    return cesta
 
 
 def ask(otazka, vychozi=None):
@@ -104,9 +119,9 @@ def main():
     if len(sys.argv) < 2:
         sys.exit("Použití: install-from-disk.py \"/cesta/k/setup.exe\" [název hry]")
 
-    instalator = os.path.realpath(os.path.expanduser(sys.argv[1]))
+    instalator = cesta_z_argumentu(sys.argv[1])
     if not os.path.isfile(instalator):
-        sys.exit(f"Soubor {instalator} neexistuje.")
+        sys.exit(f"Soubor {instalator} neexistuje (dostal jsem: {sys.argv[1]!r}).")
     if not os.path.isfile(UMU) or not os.path.isdir(PROTON):
         sys.exit("Nenašel jsem Heroic nástroje (umu, GE-Proton). Spusť Heroic a nainstaluj GE-Proton.")
     if heroic_bezi():
