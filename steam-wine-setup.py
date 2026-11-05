@@ -12,6 +12,7 @@ Použití:
     python3 steam-wine-setup.py ~/Hry/MojeHra        # celá cesta (i přímo k .exe nebo setup.exe)
     python3 steam-wine-setup.py --heroic "MojeHra"   # rovnou přes Heroic
     python3 steam-wine-setup.py --bottles "MojeHra"  # rovnou přes Bottles
+    python3 steam-wine-setup.py --wine "/cesta/k/setup.exe"  # instalovat přes Wine, bez innoextractu
 
 Co udělá:
   1. najde .exe ve složce a nechá tě vybrat to, které spouští hru (nebo instalátor)
@@ -45,13 +46,16 @@ from subprocess import DEVNULL, PIPE
 
 # Složky s hrami: z jejich podsložek skript nabídne seznam her (a hledá v nich, když
 # zadáš jen název hry). Uprav si podle sebe.
-SLOZKY_S_HRAMI = ["~/Documents/games", "~/Hry", "~/Games"]
+SLOZKY_S_HRAMI = ["/media/vikisekkk/viki-vault"] #["~/Documents/games", "~/Hry", "~/Games"]
 
 # Podsložky, které v seznamu her nechceme (patří spouštěčům, ne hrám)
 NE_HRY = {"heroic", "umu"}
 
 # Kam rozbalovat hry z instalátorů přes innoextract (vznikne podsložka s názvem hry)
 SLOZKA_PRO_INSTALACE = "~/Games"
+
+# Přepínač --wine: instalovat vždy přes Wine, innoextract přeskočit (nastaví main)
+PRESKOCIT_INNOEXTRACT = False
 
 # Co skript zapne v každé NOVÉ bottle (existující bottle nemění). Uprav si podle sebe.
 #   sync:     "fsync" (rychlé, jádro 5.16+), "esync", "ntsync" (jádro 6.14+), "wine" (výchozí Bottles)
@@ -391,6 +395,8 @@ def zajisti_pristup(app_id, nazev, slozka):
 
 def rozbal_innoextract(instalator, program):
     """Rozbalí instalátor Inno Setup bez Wine. Vrátí složku s hrou, nebo None."""
+    if PRESKOCIT_INNOEXTRACT:
+        return None
     if not shutil.which("innoextract"):
         pozor("innoextract není nainstalovaný (sudo apt install innoextract), instaluju přes Wine.")
         return None
@@ -1136,12 +1142,16 @@ def pridej_do_steamu(program, exe_hry, slozka_hry, pro_steam, stitek):
 # --------------------------------------------------------------------------
 
 def main():
+    global PRESKOCIT_INNOEXTRACT
     argumenty = sys.argv[1:]
     predvoleny = None
     for prepinac in ("--heroic", "--bottles"):
         if prepinac in argumenty:
             argumenty.remove(prepinac)
             predvoleny = prepinac[2:]
+    if "--wine" in argumenty:
+        argumenty.remove("--wine")
+        PRESKOCIT_INNOEXTRACT = True
 
     print(_c("1", "Windows hra  →  Bottles nebo Heroic  →  Steam"))
 
