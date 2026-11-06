@@ -29,7 +29,8 @@ GAMES_CONFIG = os.path.join(HEROIC, "GamesConfig")
 PREFIXY = os.path.expanduser("~/Games/Heroic/Prefixes")
 
 # Soubory, které nejsou hra (instalátory, redistribuce, deinstalátory)
-NE_HRY = re.compile(r"unins|setup|install|redist|vc_|vcredist|dxsetup|crash|helper|launcher", re.I)
+NE_HRY = re.compile(r"unins|setup|install|redist|vc_|vcredist|dxsetup|dxwebsetup|crash|helper|handler|crs-|"
+                    r"launcher|prereq|dotnet|oalinst|report|unitycrash|steamcmd|vulkan|ue4", re.I)
 
 
 def cesta_z_argumentu(text):
@@ -57,18 +58,21 @@ def heroic_bezi():
 
 
 def nove_exe(drive_c, od_casu):
+    """Nově vzniklá .exe (bez instalátorů a pomocníků), seřazená od největšího po nejmenší."""
     nalezene = []
     for koren, _, soubory in os.walk(drive_c):
         for s in soubory:
             if not s.lower().endswith(".exe") or NE_HRY.search(s):
                 continue
             cesta = os.path.join(koren, s)
+            if "/windows/" in cesta.lower() or "/internet explorer/" in cesta.lower():
+                continue  # systémové soubory Wine, ne hra
             try:
                 if os.path.getmtime(cesta) >= od_casu:
-                    nalezene.append(cesta)
+                    nalezene.append((cesta, os.path.getsize(cesta)))
             except OSError:
                 pass
-    return sorted(nalezene)
+    return sorted(nalezene, key=lambda x: x[1], reverse=True)
 
 
 def zapis_do_heroicu(nazev, prefix, exe):
@@ -154,12 +158,13 @@ def main():
     if not nalezene:
         sys.exit("Žádné nově nainstalované .exe jsem nenašel. Prefix zůstal, můžeš to zkusit znovu.")
 
-    print("\nNově nainstalované .exe:")
-    for i, cesta in enumerate(nalezene, 1):
-        print(f"  {i}. {os.path.relpath(cesta, drive_c)}")
+    # Hra bývá nejen největší .exe, ale i největší soubor v její složce, proto bereme velikost
+    print("\nNově nainstalované .exe (největší nahoře, nejspíš hra je 1):")
+    for i, (cesta, velikost) in enumerate(nalezene, 1):
+        print(f"  {i}. {os.path.relpath(cesta, drive_c)}  ({velikost // 1048576} MB)")
     volba = ask("Které .exe spouští hru (číslo)", "1")
     try:
-        exe = nalezene[int(volba) - 1]
+        exe = nalezene[int(volba) - 1][0]
     except (ValueError, IndexError):
         sys.exit("Neplatná volba.")
 
