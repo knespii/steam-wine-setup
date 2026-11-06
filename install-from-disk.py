@@ -57,22 +57,28 @@ def heroic_bezi():
     return subprocess.run(["pgrep", "-f", "/app/bin/heroic/heroic$"], capture_output=True).returncode == 0
 
 
-def nove_exe(drive_c, od_casu):
-    """Nově vzniklá .exe (bez instalátorů a pomocníků), seřazená od největšího po nejmenší."""
-    nalezene = []
+def vsechna_exe(drive_c):
+    """Všechna .exe v prefixu (bez instalátorů, pomocníků a systémových souborů Wine)."""
+    nalezene = set()
     for koren, _, soubory in os.walk(drive_c):
         for s in soubory:
             if not s.lower().endswith(".exe") or NE_HRY.search(s):
                 continue
             cesta = os.path.join(koren, s)
             if "/windows/" in cesta.lower() or "/internet explorer/" in cesta.lower():
-                continue  # systémové soubory Wine, ne hra
-            try:
-                if os.path.getmtime(cesta) >= od_casu:
-                    nalezene.append((cesta, os.path.getsize(cesta)))
-            except OSError:
-                pass
-    return sorted(nalezene, key=lambda x: x[1], reverse=True)
+                continue
+            nalezene.add(cesta)
+    return nalezene
+
+
+def nove_exe(drive_c, pred_instalaci):
+    """Hry nainstalované od doby, kdy jsme startovali; největší nahoře.
+
+    Čas úpravy nepoužíváme: instalátory často zachovají časy ze svého archivu,
+    takže nově rozbalené soubory vypadají jako staré.
+    """
+    nove = vsechna_exe(drive_c) - pred_instalaci
+    return sorted(((c, os.path.getsize(c)) for c in nove), key=lambda x: x[1], reverse=True)
 
 
 def zapis_do_heroicu(nazev, prefix, exe):
@@ -144,7 +150,7 @@ def main():
     env = dict(os.environ, WINEPREFIX=prefix, PROTONPATH=PROTON, GAMEID="umu-default",
                STEAM_COMPAT_DATA_PATH=prefix)
 
-    od_casu = time.time() - 2
+    pred_instalaci = vsechna_exe(os.path.join(prefix, "drive_c"))
     proces = subprocess.Popen([sys.executable, UMU, instalator], env=env,
                               cwd=os.path.dirname(instalator))
     print("\nProjdi instalaci ve Wine okně. Cestu nech výchozí (C:\\...).")
@@ -154,7 +160,7 @@ def main():
         proces.wait()
 
     drive_c = os.path.join(prefix, "drive_c")
-    nalezene = nove_exe(drive_c, od_casu)
+    nalezene = nove_exe(drive_c, pred_instalaci)
     if not nalezene:
         sys.exit("Žádné nově nainstalované .exe jsem nenašel. Prefix zůstal, můžeš to zkusit znovu.")
 
