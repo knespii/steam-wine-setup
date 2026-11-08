@@ -47,6 +47,13 @@ def cesta_z_argumentu(text):
     return cesta
 
 
+def ano(otazka, vychozi=True):
+    odpoved = input(f"{otazka} [{'A/n' if vychozi else 'a/N'}]: ").strip().lower()
+    if not odpoved:
+        return vychozi
+    return odpoved in ("a", "ano", "y", "yes")
+
+
 def ask(otazka, vychozi=None):
     suffix = f" [{vychozi}]" if vychozi else ""
     odpoved = input(f"{otazka}{suffix}: ").strip()
@@ -151,7 +158,10 @@ def main():
     slozka_prefixu = re.sub(r"[^\w\- ]", "", nazev).strip() or "hra"
     prefix = os.path.join(PREFIXY, slozka_prefixu)
     if os.path.exists(prefix):
-        print(f"Prefix {prefix} už existuje, přepisuju ho (starý se smaže).")
+        print(f"Prefix {prefix} už existuje.")
+        print("Přepsání ho smaže i s uloženými pozicemi a nedá se vrátit.")
+        if not ano(f"Opravdu přepsat {prefix}?", vychozi=False):
+            sys.exit("Zrušeno, nic jsem nesmazal.")
         shutil.rmtree(prefix)
 
     print(f"\nInstalátor: {instalator}")
