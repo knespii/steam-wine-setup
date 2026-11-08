@@ -86,12 +86,21 @@ def zapis_do_heroicu(nazev, prefix, exe):
     app_name = "%016x" % random.getrandbits(64)
     slozka = os.path.dirname(exe)
 
+    zaloha = time.strftime('%Y%m%d-%H%M%S')
     if os.path.exists(LIBRARY):
-        shutil.copy2(LIBRARY, LIBRARY + f".pred-pridanim-{time.strftime('%Y%m%d-%H%M%S')}")
+        shutil.copy2(LIBRARY, LIBRARY + f".pred-pridanim-{zaloha}")
         with open(LIBRARY, encoding="utf-8") as f:
             knihovna = json.load(f)
     else:
         knihovna = {"games": []}
+
+    # Starý záznam se stejným názvem nahradíme: knihovnu očistíme a jeho nastavení odložíme do zálohy
+    stare = [g for g in knihovna["games"] if g.get("title") == nazev]
+    knihovna["games"] = [g for g in knihovna["games"] if g.get("title") != nazev]
+    for g in stare:
+        cfg = os.path.join(GAMES_CONFIG, f"{g['app_name']}.json")
+        if os.path.exists(cfg):
+            shutil.move(cfg, cfg + f".pred-prepsanim-{zaloha}")
 
     knihovna["games"].append({
         "runner": "sideload",
@@ -142,7 +151,8 @@ def main():
     slozka_prefixu = re.sub(r"[^\w\- ]", "", nazev).strip() or "hra"
     prefix = os.path.join(PREFIXY, slozka_prefixu)
     if os.path.exists(prefix):
-        sys.exit(f"Prefix {prefix} už existuje. Smaž ho nebo zvol jiný název.")
+        print(f"Prefix {prefix} už existuje, přepisuju ho (starý se smaže).")
+        shutil.rmtree(prefix)
 
     print(f"\nInstalátor: {instalator}")
     print(f"Prefix: {prefix}")
